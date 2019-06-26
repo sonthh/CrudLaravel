@@ -31,3 +31,4 @@ Route::prefix('admin')->group(function () {
 
     });
 });
+Route::get('update', 'AdminArticleController@update');

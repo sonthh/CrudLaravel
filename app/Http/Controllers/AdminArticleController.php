@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constant\SystemConstant;
 use App\Models\Article;
 use App\Models\Category;
 use App\Util\SlugUtil;
@@ -20,8 +21,8 @@ class AdminArticleController extends BaseController
 
     //admin/article/index
     public function index () {
-
-        $articles = Article::with('category')->paginate(4);
+        
+        $articles = Article::with('category')->paginate(SystemConstant::PER_PAGE);
         return view('admin.article.index', [
             'articles' => $articles
         ]);
@@ -75,22 +76,29 @@ class AdminArticleController extends BaseController
         $article->content = $articleForm['content'];
         $article->is_active = (int) $articleForm['is_active'];
         $article->slug = SlugUtil::makeSlug($article->name);
+        $article->category_id = $articleForm['category_id'];
         $article->update();
         $count = Article::with('category')->where('id', '<', $article->id)->count();
-        $page = (int) ($count / 4 + 1);
+        $page = (int) ($count / SystemConstant::PER_PAGE + 1);
+
         $request->session()->flash('message', 'Editing success!<br />' . $article->name);
+        $request->session()->flash('articleId', $article->id);
+
         return redirect('admin/article/index?page=' . $page);
     }
 
     //admin/article/delete/{articleId}
     public function delete ($articleId, Request $request) {
 
-        $page = $request->query('page');
-        Article::query()->where('id', '=', $articleId)->delete();
+        $deleteArticle = Article::query()->where('id', '=', $articleId)->first();
+        $deleteArticle->delete();
 
-        $lastPage = Article::with('category')->paginate(4)->lastPage();
+        $page = $request->query('page');
+        //xử lí trả về trang vừa mới xóa, nếu trang vừa mới xóa hết items rồi thì về trang trước đó
+        $lastPage = Article::with('category')->paginate(SystemConstant::PER_PAGE)->lastPage();
         if ($page > $lastPage && $page != 1)
             --$page;
+        $request->session()->flash('message', 'Deletion success<br />' . $deleteArticle->name);
         return redirect('admin/article/index?page=' . $page);
     }
 
@@ -102,5 +110,14 @@ class AdminArticleController extends BaseController
         $article->is_active = !$articleStatus;
         $article->update();
         return 'success';
+    }
+
+    public function update () {
+       Article::query()->update([
+           'name' => 'CRUD with Laravel Framework',
+           'description' => 'CRUD with Laravel Framework',
+           'content' => 'CRUD with Laravel Framework',
+           'slug' => 'crud-with-laravel-framework',
+       ]);
     }
 }

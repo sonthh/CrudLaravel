@@ -3,12 +3,14 @@
         {{-- Previous Page Link --}}
         @if ($paginator->onFirstPage())
             <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.previous')">
-                <span class="page-link" aria-hidden="true">&laquo;</span>
+{{--                <span class="page-link" aria-hidden="true">&laquo;</span>--}}
+                <span class="page-link" aria-hidden="true"><i class="fas fa-chevron-left"></i></span>
             </li>
         @else
             <li class="page-item">
                 <a class="page-link" href="{{ $paginator->previousPageUrl() }}"
-                   rel="prev" aria-label="@lang('pagination.previous')">&laquo;</a>
+{{--                   rel="prev" aria-label="@lang('pagination.previous')">&laquo;</a>--}}
+                   rel="prev" aria-label="@lang('pagination.previous')"><i class="fas fa-chevron-left"></i></a>
             </li>
         @endif
 
@@ -16,7 +18,11 @@
         @foreach ($elements as $element)
             {{-- "Three Dots" Separator --}}
             @if (is_string($element))
-                <li class="page-item disabled" aria-disabled="true"><span class="page-link">{{ $element }}</span></li>
+                <li class="page-item disabled" aria-disabled="true">
+                    <span class="page-link">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </span>
+                </li>
             @endif
 
             {{-- Array Of Links --}}
@@ -35,11 +41,14 @@
         @if ($paginator->hasMorePages())
             <li class="page-item">
                 <a class="page-link" href="{{ $paginator->nextPageUrl() }}"
-                   rel="next" aria-label="@lang('pagination.next')">&raquo;</a>
+{{--                   rel="next" aria-label="@lang('pagination.next')">&raquo;</a>--}}
+                   rel="next" aria-label="@lang('pagination.next')"><i class="fas fa-chevron-right"></i></a>
+
             </li>
         @else
             <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.next')">
-                <span class="page-link" aria-hidden="true">&raquo;</span>
+{{--                <span class="page-link" aria-hidden="true">&raquo;</span>--}}
+                <span class="page-link" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
             </li>
         @endif
     </ul>

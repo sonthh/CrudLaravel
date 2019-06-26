@@ -38,24 +38,34 @@
                 </tr>
             @else
                 @foreach($articles as $article)
-                    <tr>
+                    @php
+                        $classActive = (request()->session()->has('articleId')
+                                        && request()->session()->get('articleId') == $article->id)
+                                        ? 'table-success' : 'active';
+                    @endphp
+                    <tr class="{{$classActive}}">
                         <td>{{$loop->iteration}}</td>
                         <td>{{$article->id}}</td>
                         <td>{{$article->name}}</td>
                         <td>{{$article->description}}</td>
                         <td>{{$article->category->name}}</td>
                         <td>
-                            <button data-article-id="{{$article->id}}" data-article-status="{{$article->is_active}}"
-                                type="button"
+                            <button
+                                data-article-id="{{$article->id}}" data-article-status="{{$article->is_active}}"
+                                type="button" data-toggle="tooltip"
+                                title="Click to {{$article->is_active == 0 ? 'activate item.' : 'deactivate item.'}}"
                                 class="active-status btn-sm btn btn-{{$article->is_active == 0 ? 'dark' : 'danger'}}">
-                            Active</button>
+                                Active
+                            </button>
                         </td>
                         <td>
                             <a id="" class="btn btn-sm btn-secondary"
                                href="/admin/article/edit/{{$article->id}}">Edit</a>
-                            <a onclick="confirm('Are you want to delete {{$article->name}}')"
-                               id="" class="btn btn-sm btn-danger"
-                               href="/admin/article/delete/{{$article->id}}?page={{request('page')}}">Delete</a>
+                            <a  data-toggle="modal" data-target="#deleteModal" data-whatever="{{$article->name}}"
+                                id="" class="btn btn-sm btn-danger"
+                                data-href="/admin/article/delete/{{$article->id}}?page={{request('page')}}">
+                                Delete
+                            </a>
                         </td>
                     </tr>
                 @endforeach
@@ -69,11 +79,48 @@
             </div>
         </div>
     </div>
+    <div>
+        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog"
+             aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Do you want to delete this item?</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <a class="btn btn-primary btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<script src="js/jquery-3.3.1.js"></script>
+@endsection
+@section('page-script')
 <script>
     $('document').ready(function () {
+        $('#deleteModal').on('show.bs.modal', function (event) {
+            let $button = $(event.relatedTarget);
+            let articleName = $button.data('whatever');
+            let $modal = $(this);
+            $modal.find('.modal-body').text(articleName);
+            $modal.modal('hide');
+            $modal.find('.btn-ok').attr('href', $(event.relatedTarget).data('href'));
+        });
+
+        $('.active-status').tooltip();
+
         $('.active-status').click(function () {
+
+            // $('#deleteModal').modal();
+
             let articleStatus = $(this).attr('data-article-status');
             let articleId = $(this).attr('data-article-id');
             let $button = $(this);
@@ -95,6 +142,12 @@
                             $button.removeClass('btn-dark').addClass('btn-danger');
                             $button.attr('data-article-status', 1);
                         }
+                        let title = "Click to ";
+                        title += articleStatus == 1 ? 'activate item.' : 'deactivate item.';
+                        // $button.attr('title', title);
+                        $button.tooltip('hide')
+                            .attr('data-original-title', title)
+                            .tooltip('show');
                     }
                 },
                 error: function (){
